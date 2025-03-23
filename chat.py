@@ -57,7 +57,7 @@ if "messages" not in st.session_state:
 
 # 🔗 ENVIA PERGUNTA PARA A API
 def ask_question(question):
-    url = "http://127.0.0.1:5000/ask"  # ou o endpoint da sua API em produção
+    url ="http://20.197.225.152:5000/ask"  # ou o endpoint da sua API em produção
     payload = {
         "client_id": st.session_state.client_id,
         "question": question
