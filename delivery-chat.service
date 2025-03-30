@@ -1,0 +1,13 @@
+[Unit]
+Description=Delivery Chat (Streamlit)
+After=network.target
+
+[Service]
+User=SEU_USUARIO
+WorkingDirectory=/home/SEU_USUARIO/delivery-chat
+ExecStart=/home/SEU_USUARIO/delivery-chat/venv/bin/streamlit run chat.py --server.port 8501 --server.address 0.0.0.0
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
