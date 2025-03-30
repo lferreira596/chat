@@ -30,10 +30,10 @@ st.markdown("""
 st.markdown("<h1>🍕 Delivery Insights</h1>", unsafe_allow_html=True)
 st.markdown("<h3>Converse com a IA e entenda os dados do seu delivery</h3>", unsafe_allow_html=True)
 
-# 📷 IMAGEM DE DESTAQUE (altere conforme necessário)
+# 📷 IMAGEM DE DESTAQUE
 st.image("delivery_banner.webp", use_container_width=True)
 
-# 📌 EXEMPLOS DE PERGUNTAS
+# 📌 EXEMPLOS
 with st.expander("❓ Exemplos de perguntas"):
     st.markdown("""
     - Qual o ticket médio em São Paulo?
@@ -42,50 +42,42 @@ with st.expander("❓ Exemplos de perguntas"):
     - Quanto tempo leva a entrega média no Rio de Janeiro?
     """)
 
-# 🔁 BOTÃO DE RESET
+# 🔁 RESET
 if st.button("🔄 Nova conversa"):
     st.session_state.messages = []
     st.experimental_rerun()
 
-# 🆔 CLIENT ID ÚNICO POR SESSÃO
-if "client_id" not in st.session_state:
-    st.session_state.client_id = str(uuid.uuid4())
-
-# 💬 HISTÓRICO DE MENSAGENS
+# 🆔 ID de sessão
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# 🔗 ENVIA PERGUNTA PARA A API
+# 🔗 Função para chamada da API
 def ask_question(question):
-    url ="http://20.197.225.152:5000/ask"  # ou o endpoint da sua API em produção
-    payload = {
-        "client_id": st.session_state.client_id,
-        "question": question
-    }
-    response = requests.post(url, json=payload)
-    if response.status_code == 200:
-        return response.json().get("answer", "Erro ao obter resposta.")
-    return f"Erro: {response.status_code} - {response.text}"
+    url = "http://20.197.225.152:5000/ask"
+    payload = {"question": question}
+    try:
+        response = requests.post(url, json=payload, timeout=10)
+        if response.status_code == 200:
+            return response.json().get("answer", "Resposta vazia.")
+        return f"Erro: {response.status_code} - {response.text}"
+    except requests.exceptions.RequestException as e:
+        return f"Erro de conexão com a API: {e}"
 
-# 🧾 MOSTRA MENSAGENS ANTERIORES
+# 💬 Histórico
 for message in st.session_state.messages:
     avatar = "👤" if message["role"] == "user" else "🤖"
     with st.chat_message(message["role"]):
         st.markdown(f"{avatar} {message['content']}")
 
-# 📥 INPUT DO USUÁRIO
+# 📥 Input do usuário
 prompt = st.chat_input("Ex: Qual o ticket médio em São Paulo?")
 if prompt:
-    # Usuário
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.chat_message("user").markdown(f"👤 {prompt}")
-    
-    # IA responde com spinner
+
     with st.chat_message("assistant"):
         with st.spinner("🤖 Pensando..."):
             answer = ask_question(prompt)
             st.markdown(f"🤖 {answer}")
-    
-    # Guarda no histórico
-    st.session_state.messages.append({"role": "assistant", "content": answer})
 
+    st.session_state.messages.append({"role": "assistant", "content": answer})
